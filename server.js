@@ -59,9 +59,10 @@ app.use("/api/ITPM/payments", paymentRoutes);
 
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 // Function to create default admin user if not exists
 const createDefaultAdmin = async () => {
