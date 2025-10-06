@@ -47,31 +47,27 @@ router.post("/signup/user", registerUser);
 router.post("/signup/manager", registerUser);
 
 // 3) Common Login
+// routes/tharusha/userRoute.js  (login)
 router.post("/login", async (req, res) => {
-  const { email, pwd } = req.body;
   try {
+    const { email, pwd, password } = req.body;
+    const pass = pwd ?? password;                        // ✅ accept both
+    if (!email || !pass) return res.status(400).json({ message: "Email and password are required" });
+
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    const isMatch = await bcrypt.compare(pwd, user.pwd);
+    const isMatch = await bcrypt.compare(pass, user.pwd);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || "secret",
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET || "secret", { expiresIn: "1h" });
 
-    res.json({
-      message: "Login successful",
-      role: user.role,
-      userId: user._id,
-      token,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.json({ message: "Login successful", role: user.role, userId: user._id, token });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
   }
 });
+
 
 /* ───────── 4) LIST ALL USERS (no token required) ───────── */
 router.get("/", async (_req, res) => {
